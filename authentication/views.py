@@ -23,12 +23,12 @@ class UserViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated]
 
 
-@api_view(['GET'])
-@permission_classes([IsAuthenticated])
-def getRooms(request):
-    routes=[
-        'GET /api',
-        'GET /api/rooms',
-        'GET /api/rooms/:id'
-    ]
-    return Response(routes)
+# @api_view(['GET'])
+# @permission_classes([IsAuthenticated])
+# def getRooms(request):
+#     routes=[
+#         'GET /api',
+#         'GET /api/rooms',
+#         'GET /api/rooms/:id'
+#     ]
+#     return Response(routes)
