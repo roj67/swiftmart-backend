@@ -4,6 +4,7 @@ from rest_framework.views import APIView
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
+from rest_framework_simplejwt.tokens import RefreshToken
 from django.conf import settings
 from urllib.parse import urlencode
 from .serializers import UserSerializer
@@ -65,7 +66,24 @@ def google_callback(request):
         return Response({'error': 'Failed to retrieve user info.'})
 
     # You can now use the user info (such as their email, name) for your app logic
-    return Response({'success': True, 'user_info': user_info})
+    user = User.objects.filter(email=user_info['email']).first()
+    if user is None:
+        extra_fields = {
+                "has_password": False,
+                "is_google_authenticated": True
+            }
+        user = User.objects.create_user(
+            email=user_info['email'],
+            password=None,
+            name=user_info['name'],
+            username=None,
+            **extra_fields
+        )
+        user.save()
+    
+    refresh = RefreshToken.for_user(user)
+
+    return Response({'success': True, 'user_info': user_info, 'token': {'refresh': str(refresh), 'access': str(refresh.access_token)}})
 
 class RegisterView(APIView):
     def post(self, request):
