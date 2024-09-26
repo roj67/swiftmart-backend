@@ -15,5 +15,5 @@ urlpatterns = [
     path('auth/google/url/', views.google_login_url, name='google_login_url'),
     path('auth/google/callback/', views.google_callback, name='google_callback'),
 
-    path('register-user/', views.RegisterView.as_view(), name='register-user')
+    path('users/register-user/', views.RegisterView.as_view(), name='register-user')
 ]

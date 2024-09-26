@@ -7,6 +7,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework_simplejwt.tokens import RefreshToken
 from django.conf import settings
 from urllib.parse import urlencode
+from drf_yasg.utils import swagger_auto_schema
 from .serializers import UserSerializer
 from .models import User
 
@@ -86,6 +87,7 @@ def google_callback(request):
     return Response({'success': True, 'user_info': user_info, 'token': {'refresh': str(refresh), 'access': str(refresh.access_token)}})
 
 class RegisterView(APIView):
+    @swagger_auto_schema(request_body=UserSerializer)
     def post(self, request):
         serializer = UserSerializer(data=request.data)
         if serializer.is_valid():
