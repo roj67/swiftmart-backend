@@ -1,13 +1,24 @@
 from django.shortcuts import render
 from rest_framework import status
-from rest_framework.decorators import api_view
+from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.views import APIView
 from rest_framework.response import Response
+from rest_framework.permissions import BasePermission
 from drf_yasg.utils import swagger_auto_schema
 from .models import Product
 from .serializers import ProductSerializer
 
+
+class IsStaff(BasePermission):
+    def has_permission(self, request, view):
+        return bool(request.user and request.user.is_staff)
+
 class ProductView(APIView):
+    def get_permissions(self):
+        if self.request.method == 'POST':
+            return [IsAuthenticated(), IsStaff()]
+        return [AllowAny()]
+
     def get(self, request):
         products = Product.objects.all()
         serialize = ProductSerializer(products, many=True)
@@ -22,9 +33,14 @@ class ProductView(APIView):
                 return Response(serializer.data, status=status.HTTP_201_CREATED)
             except Exception as e:
                 return Response(serializer.data, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        return Response({"message": serializer.data}, status=status.HTTP_400_BAD_REQUEST)
     
 class ProductDetailView(APIView):
+    def get_permissions(self):
+        if self.request.method == 'GET':
+            return [AllowAny()]
+        return [IsAuthenticated(), IsStaff()]
+
     def get(self, request, id):
         product = Product.objects.get(id=id)
         serialize = ProductSerializer(product)
@@ -39,10 +55,10 @@ class ProductDetailView(APIView):
                 serializer.save()
                 return Response(serializer.data, status=status.HTTP_200_OK)
         except Product.DoesNotExist:
-            return Response("Product Does Not Exist!", status=status.HTTP_404_NOT_FOUND)
+            return Response({"message": "Product Does Not Exist!"}, status=status.HTTP_404_NOT_FOUND)
         except Exception as e:
             return Response(serializer.data, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        return Response({"message": serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
     
     @swagger_auto_schema(request_body=ProductSerializer)
     def put(self, request, id):
@@ -52,6 +68,6 @@ class ProductDetailView(APIView):
         try:
             product : Product = Product.objects.get(id=id)
             product.delete()
-            return Response("Product deleted!", status=status.HTTP_200_OK)
+            return Response({"message": "Product Deleted!"}, status=status.HTTP_200_OK)
         except Exception as e:
-            return Response("Product not deleted!", status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            return Response({"message": "Product Couldn't Be Deleted!"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

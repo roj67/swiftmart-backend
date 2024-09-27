@@ -50,6 +50,7 @@ INSTALLED_APPS = [
 
     'authentication.apps.AuthenticationConfig',
     'product.apps.ProductConfig',
+    'cart.apps.CartConfig',
 
     'rest_framework',
     'rest_framework.authtoken',

@@ -1,5 +1,11 @@
 from django.db import models
 
+class Category(models.Model):
+    name = models.CharField(max_length=200, blank=True, null=True)
+
+    def __str__(self):
+        return self.name
+
 class ProductSize(models.Model):
     name = models.CharField(max_length=50, blank=True, null=True)
     value = models.CharField(max_length=50, blank=True, null=True)
@@ -23,6 +29,7 @@ class Product(models.Model):
     reviewer_count = models.IntegerField(blank=True, null=True)
     sizes = models.ManyToManyField(ProductSize, blank=True)
     colors = models.ManyToManyField(ProductColor, blank=True)
+    category = models.ForeignKey(Category, on_delete=models.SET_NULL, null=True)
 
     def __str__(self):
         return self.name
