@@ -22,3 +22,17 @@ class WishList(models.Model):
 
     def __str__(self):
         return self.product.name
+    
+
+class CheckOut(models.Model):
+    firstname = models.CharField(max_length=150)
+    lastname = models.CharField(max_length=150)
+    street = models.CharField(max_length=250)
+    extrafield = models.CharField(max_length=250)
+    city = models.CharField(max_length=250)
+    number = models.BigIntegerField()
+    email = models.EmailField()
+    save_info = models.BooleanField(default=False)
+
+    def __str__(self):
+        return self.firstname + self.lastname
