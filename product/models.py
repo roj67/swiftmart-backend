@@ -1,3 +1,5 @@
+import os
+import uuid
 from django.db import models
 
 class Category(models.Model):
@@ -34,11 +36,26 @@ class Product(models.Model):
     def __str__(self):
         return self.name
     
+def get_guid_filename(instance, filename):
+    guid = str(uuid.uuid4())
+    ext = filename.split('.')[-1]
+    return f"{guid}.{ext}"
+
 class ProductImage(models.Model):
     product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name='images')
-    image = models.ImageField(null=True, default="")
+    image = models.ImageField(null=True, default="", upload_to=get_guid_filename)
+
+    def delete(self, *args, **kwargs):
+        if self.image:
+            if os.path.isfile(self.image.path):
+                os.remove(self.image.path)
+        super().delete(*args, **kwargs)
+
 
     def __str__(self):
         return f"Image for {self.product.name}"
+    
+
+   
 
 

@@ -5,8 +5,8 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import BasePermission
 from drf_yasg.utils import swagger_auto_schema
-from .models import Product
-from .serializers import ProductSerializer
+from .models import Product, ProductImage
+from .serializers import ProductSerializer, ProductImageSerializer
 
 
 class IsStaff(BasePermission):
@@ -71,3 +71,37 @@ class ProductDetailView(APIView):
             return Response({"message": "Product Deleted!"}, status=status.HTTP_200_OK)
         except Exception as e:
             return Response({"message": "Product Couldn't Be Deleted!"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+class ProductImageView(APIView):
+    permission_classes= [IsAuthenticated, IsStaff]
+
+    @swagger_auto_schema(request_body=ProductImageSerializer)
+    def post(self, request):
+        serializer = ProductImageSerializer(data = request.data)
+        try:
+            product = Product.objects.get(id = request.data['product'])
+            if serializer.is_valid() and product is not None:
+                serializer.save()
+                return Response(serializer.data, status= status.HTTP_201_CREATED)
+        except Product.DoesNotExist:
+            return Response({"message": serializer.data}, status=status.HTTP_404_NOT_FOUND)
+        except Exception as e:
+            return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        return Response({"message": serializer.data}, status=status.HTTP_400_BAD_REQUEST)
+
+class ProductImageDetailView(APIView):
+    permission_classes= [IsAuthenticated, IsStaff]
+
+    def get(self, request, id):
+        images = ProductImage.objects.filter(product__id = id)
+        serialize = ProductImageSerializer(images, many=True)
+        return Response(serialize.data)
+
+    def delete(self, request, id):
+        try:
+            image : ProductImage = ProductImage.objects.get(id=id)
+            image.delete()
+            return Response({"message": "Image Deleted!"}, status=status.HTTP_200_OK)
+        except Exception as e:
+            return Response({"message": "Image Couldn't Be Deleted!"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+ 
