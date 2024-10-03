@@ -42,7 +42,7 @@ def get_guid_filename(instance, filename):
     return f"{guid}.{ext}"
 
 class ProductImage(models.Model):
-    product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name='images')
+    product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name='product_image')
     image = models.ImageField(null=True, default="", upload_to=get_guid_filename)
 
     def delete(self, *args, **kwargs):
@@ -54,6 +54,18 @@ class ProductImage(models.Model):
 
     def __str__(self):
         return f"Image for {self.product.name}"
+    
+class CategoryImage(models.Model):
+    category = models.ForeignKey(Category, on_delete=models.CASCADE, related_name="category_image")
+    image = models.ImageField(null=True, default="", upload_to=get_guid_filename)
+
+    def delete(self, *args, **kwargs):
+        if os.path.isfile(self.image.path):
+            os.remove(self.image.path)
+        super().delete(*args, **kwargs)
+
+    def __str__(self):
+        return f"Image for {self.category.name}"
     
 
    
